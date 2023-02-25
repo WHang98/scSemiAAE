@@ -28,7 +28,7 @@ cuda = torch.cuda.is_available()
 kwargs = {'num_workers': 1, 'pin_memory': True} if cuda else {}   # GPU的一些设置
 
 
-class AAE_net(nn.Module):
+class SAAE_net(nn.Module):
     def __init__(self,X_dim, N,M,z_dim,n_clusters,sigma=1.,gamma=1.):
         super().__init__()
         self.sigma = sigma
@@ -46,18 +46,15 @@ class AAE_net(nn.Module):
             nn.Linear(M, z_dim)  
         )
         
-        self.P_net = nn.Sequential( 
-                                   
+        self.P_net = nn.Sequential(                           
             nn.Linear(z_dim, M),
             nn.Dropout(0.2),
             nn.ReLU(),
             nn.Linear(M, N)
-
         )
        
         self.out_net = nn.Sequential(
             nn.Dropout(0.2),
-
             nn.Linear(N, N),
             nn.Sigmoid(),             
         )
@@ -86,7 +83,6 @@ class AAE_net(nn.Module):
     def forward(self,x):
         x  = x.float()
         z_noise  = self.Q_net((x+torch.randn_like(x) * self.sigma).float())
-    
         z_noise_2 = self.P_net(z_noise.float())
         h = self.out_net(z_noise_2)
         mean = self._lin_mean(h)
@@ -98,7 +94,7 @@ class AAE_net(nn.Module):
         z = self.Q_net(x.float())
         return z,mean,disp,pi,z_noise,y_hat,latent
 
-    #对于自编码器进行预训练
+    #对于模型进行预训练
     def pretrian(self,x, X_raw, size_factor,epoch =100,batch_size=128,lr=0.001):    
         self.train()
         time = datetime.now().strftime('%Y%m%d')
@@ -138,6 +134,8 @@ class AAE_net(nn.Module):
     def save_checkpoint(self, state, index, filename):
         newfilename = os.path.join(filename, 'FTcheckpoint_%d.pth.tar' % index)
         torch.save(state, newfilename)
+   
+     #对模型进行训练
     def fit(self,x,y,X_raw, sf,lr=0.01,lr_d=0.0001 ,batch_size=128, num_epochs=100,save_dir=""):#234数据集的参数
         #y-=1
         Y = torch.tensor(y).long()
@@ -265,11 +263,11 @@ if __name__ == '__main__':
     x,y,raw_x,sf= load_data()
     n_clusters = len(set(y))    
     z_dim=args.z_dim
-    aae = AAE_net(X_dim=args.X_dim,N=args.N,M=args.N,z_dim=args.z_dim,n_clusters=n_clusters)
-    print('预训练自编码器')
-    aae.pretrian(x,raw_x,sf)
-    print('训练自编码器')
-    y_pred, acc, nmi, ari = aae.fit(x,y,raw_x,sf,save_dir='./数据模型')
+    saae = SAAE_net(X_dim=args.X_dim,N=args.N,M=args.N,z_dim=args.z_dim,n_clusters=n_clusters)
+    print('预训练模型')
+    saae.pretrian(x,raw_x,sf)
+    print('训练模型')
+    y_pred, acc, nmi, ari = saae.fit(x,y,raw_x,sf,save_dir='./数据模型')
 
 
    
