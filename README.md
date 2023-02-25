@@ -21,6 +21,4 @@ filter.py -- Load and process the data
 
 Branch:
 
-Main -- implementation of scSemiAAE algorithm
-
 Data -- Data used in the paper
