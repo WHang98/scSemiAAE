@@ -11,12 +11,14 @@ Scanpy --- 1.0.4
 
 Nvidia Tesla P40
 
-Arguments:
-
-n_clusters: number of clusters
-
 Files:
 
 scSemiAAE.py -- implementation of scSemiAAE algorithm
 
-Data--It is available in the branch Data of the algorithm package
+layers.py -- Definition of the zero-inflated negative binomial distribution
+
+filter.py -- Load and process the data
+
+Branch:
+
+Data -- Data used in the paper
